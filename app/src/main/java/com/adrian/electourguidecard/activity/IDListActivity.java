@@ -15,6 +15,9 @@ import com.adrian.electourguidecard.adapter.IdsAdapter;
 import com.adrian.electourguidecard.tools.CommUtil;
 import com.adrian.electourguidecard.tools.Constants;
 import com.adrian.electourguidecard.tools.NetworkUtil;
+import com.google.gson.JsonObject;
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.Ion;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -24,10 +24,9 @@ import com.baidu.mapapi.search.geocode.GeoCoder;
 import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
-
-import java.util.Arrays;
+import com.google.gson.JsonObject;
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.Ion;
 
 public class LonLatLocActivity extends BaseActivity implements OnGetGeoCoderResultListener, NetworkUtil.OnGetServerDataListener {
 
@@ -85,14 +84,25 @@ public class LonLatLocActivity extends BaseActivity implements OnGetGeoCoderResu
             CommUtil.showToast("经纬度不能为空");
             return;
         }
-        LatLng ptCenter = new LatLng((Float.valueOf(mLatitudeET.getText()
-                .toString())), (Float.valueOf(mLongitudeET.getText().toString())));
-        // 反Geo搜索
-        boolean isSearched = mSearch.reverseGeoCode(new ReverseGeoCodeOption()
-                .location(ptCenter));
-        if (isSearched) {
-            mHandler.sendEmptyMessageDelayed(MSG_REFRESH_DATA, 5000);
-        }
+        //GPS纠偏
+        Ion.with(this).load("http://api.zdoz.net/transgpsbd.aspx?lat=" + mLatitudeET.getText() + "&lng=" + mLongitudeET.getText())
+                .asJsonObject().setCallback(new FutureCallback<JsonObject>() {
+            @Override
+            public void onCompleted(Exception e, JsonObject result) {
+                CommUtil.e(TAG, result.toString());
+                if (result != null) {
+                    float lat = result.get("Lat").getAsFloat();
+                    float lng = result.get("Lng").getAsFloat();
+                    LatLng ptCenter = new LatLng(lat, lng);
+                    // 反Geo搜索
+                    boolean isSearched = mSearch.reverseGeoCode(new ReverseGeoCodeOption()
+                            .location(ptCenter));
+                    if (isSearched) {
+                        mHandler.sendEmptyMessageDelayed(MSG_REFRESH_DATA, 5000);
+                    }
+                }
+            }
+        });
     }
 
     @Override
